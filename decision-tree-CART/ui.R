@@ -15,7 +15,7 @@ shinyUI(
         fileInput("file", "Upload Model Training data in csv"),
         sliderInput('sample','Validation Sample Proportion',10,50,30),
         # h4(p("Select Response Variable")),
-        sliderInput('cp','Complexity Parameter',0,0.5,0.01),
+        sliderInput('cp','Complexity Parameter',0,0.5,0),
         fileInput("filep", "Upload Prediction data in csv"),
         htmlOutput("yvarselect"),
         htmlOutput("xvarselect"),
@@ -47,8 +47,8 @@ shinyUI(
                              verbatimTextOutput('imp'),
                              h4('Validation Result Summary on Train Data'),
                              verbatimTextOutput("validation1"),
-                             h4('Validation Result Summary on Test Data'),
-                             verbatimTextOutput("validation")
+                             #h4('Validation Result Summary on Test Data'),
+                             #verbatimTextOutput("validation")
                              ),
                     tabPanel('Detailed summary of splits',verbatimTextOutput("summary")),
                     tabPanel("Decision Tree",
@@ -67,6 +67,8 @@ shinyUI(
                              ),
                     #tabPanel("Variable",verbatimTextOutput('imp')),
                     tabPanel("Prediction",br(),
+                             #h4('Validation Result Summary on Train Data'),
+                             #verbatimTextOutput("validation1"),
                              h4('Validation Result Summary on Predict Data'),
                              verbatimTextOutput("validation2"),
                              h4("First 10 rows of predicted data"),

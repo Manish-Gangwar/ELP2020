@@ -37,15 +37,6 @@ shinyServer(function(input, output,session) {
     }
   })
 
-  pred.readdata <- reactive({
-    if (is.null(input$filep)) { return(NULL) }
-    else{
-      readdata <- as.data.frame(read.csv(input$filep$datapath ,header=TRUE, sep = ","))
-      return(readdata)
-    }
-  })
-
-    
   # Select variables:
   output$yvarselect <- renderUI({
     if (is.null(input$file)) {return(NULL)}
@@ -89,18 +80,6 @@ shinyServer(function(input, output,session) {
     
   })
   
-  
-  Dataset.Predict <- reactive({
-    fxc = setdiff(input$fxAttr, input$yAttr)
-    mydata = pred.readdata()[,c(input$yAttr,input$xAttr)]
-    
-    if (length(fxc) >= 1){
-      for (j in 1:length(fxc)){
-        mydata[,fxc[j]] = as.factor(mydata[,fxc[j]])
-      }
-    }
-    return(mydata)
-  })
   
   # a = c('a','b','c')
   # b = ('c')
@@ -173,7 +152,25 @@ shinyServer(function(input, output,session) {
     Dataset()[testsample(),]
   })
   
+  pred.readdata <- reactive({
+    if (is.null(input$filep)) { return(test_data()) }
+    else{
+      readdata <- as.data.frame(read.csv(input$filep$datapath ,header=TRUE, sep = ","))
+      return(readdata)
+    }
+  })
   
+  Dataset.Predict <- reactive({
+    fxc = setdiff(input$fxAttr, input$yAttr)
+    mydata = pred.readdata()[,c(input$yAttr,input$xAttr)]
+    
+    if (length(fxc) >= 1){
+      for (j in 1:length(fxc)){
+        mydata[,fxc[j]] = as.factor(mydata[,fxc[j]])
+      }
+    }
+    return(mydata)
+  }) 
   
   #------------------------------------------------#
   fit.rt = reactive({
@@ -386,7 +383,14 @@ shinyServer(function(input, output,session) {
       write.csv(dft, file, row.names=F, col.names=F)
     }
   )
-  
+  output$downloadData4 <- downloadHandler(
+    filename = function() { "Nodes Info.csv" },
+    content = function(file) {
+      if (identical(Dataset(), '') || identical(Dataset(),data.frame())) return(NULL)
+      dft = data.frame(row_numer = row.names(nodes1()), nodes1(), train_data());   # data.frame(row_numer = row.names(nodes1()), nodes1())
+      write.csv(dft, file, row.names=F, col.names=F)
+    }
+  )  
 
   output$prediction =  renderPrint({
     if (is.null(input$filep)) {return(NULL)}
