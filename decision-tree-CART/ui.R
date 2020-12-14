@@ -13,9 +13,9 @@ shinyUI(
         # Upload data:
         h4(p(" Data Input")),
         fileInput("file", "Upload Model Training data in csv"),
-        sliderInput('sample','Validation Sample Proportion',10,50,30),
+        sliderInput('sample','Validation Sample Proportion',10,50,10),
         # h4(p("Select Response Variable")),
-        sliderInput('cp','Complexity Parameter',0,0.5,0.005),
+        sliderInput('cp','Complexity Parameter',0,0.5,0.001),
         fileInput("filep", "Upload Prediction data in csv"),
         htmlOutput("yvarselect"),
         htmlOutput("xvarselect"),
