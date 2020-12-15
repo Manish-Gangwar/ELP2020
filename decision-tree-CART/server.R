@@ -172,6 +172,20 @@ shinyServer(function(input, output,session) {
     return(mydata)
   }) 
   
+  output$trainobs = renderPrint({
+    if (is.null(input$file)) {return(NULL)}
+    else {
+      dim( train_data())
+    }
+  })
+  
+  output$predictobs = renderPrint({
+    if (is.null(input$file)) {return(NULL)}
+    else {
+      dim(Dataset.Predict())
+    }
+  })
+  
   #------------------------------------------------#
   fit.rt = reactive({
   if (identical(Dataset(), '') || identical(Dataset(),data.frame())) return(NULL)
