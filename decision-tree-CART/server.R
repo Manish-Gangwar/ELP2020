@@ -153,7 +153,7 @@ shinyServer(function(input, output,session) {
   })
   
   pred.readdata <- reactive({
-    if (is.null(input$filep)) { return(test_data()) }
+    if (is.null(input$filep)) { return(NULL) }
     else{
       readdata <- as.data.frame(read.csv(input$filep$datapath ,header=TRUE, sep = ","))
       return(readdata)
@@ -162,7 +162,7 @@ shinyServer(function(input, output,session) {
   
   Dataset.Predict <- reactive({
     fxc = setdiff(input$fxAttr, input$yAttr)
-    mydata = pred.readdata()[,c(input$yAttr,input$xAttr)]
+    mydata = pred.readdata()[,c(input$xAttr)]
     
     if (length(fxc) >= 1){
       for (j in 1:length(fxc)){
@@ -176,6 +176,13 @@ shinyServer(function(input, output,session) {
     if (is.null(input$file)) {return(NULL)}
     else {
       dim( train_data())
+    }
+  })
+  
+  output$testobs = renderPrint({
+    if (is.null(input$file)) {return(NULL)}
+    else {
+      dim( test_data())
     }
   })
   
@@ -201,8 +208,8 @@ shinyServer(function(input, output,session) {
                   method="class",   # use "class" for classification trees
                 data=train_data())
   pr <- as.party(fit.rt)    # thus, we use same object 'rp' from the raprt package
-  val = predict(pr, newdata = test_data(),type="response")
-  val1 = predict(pr, newdata = train_data(),type="response")
+  val1 = predict(pr, newdata = test_data(),type="response")
+  val = predict(pr, newdata = train_data(),type="response")
   imp = round(fit.rt$variable.importance/sum(fit.rt$variable.importance),2)
   
   } else {
@@ -211,8 +218,8 @@ shinyServer(function(input, output,session) {
                   method="anova",   # use "class" for classification trees
                   data=train_data())
   pr <- as.party(fit.rt)    # thus, we use same object 'rp' from the raprt package
-   val = predict(pr, newdata = test_data())
-   val1 = predict(pr, newdata = train_data())
+   val1 = predict(pr, newdata = test_data())
+   val = predict(pr, newdata = train_data())
    imp = round(fit.rt$variable.importance/sum(fit.rt$variable.importance),2)
   }
   
@@ -243,57 +250,41 @@ shinyServer(function(input, output,session) {
 #---------------------------------------------------------------  
   
 
-  output$validation = renderPrint({
+  output$validation1 = renderPrint({
     if (is.null(input$file)) {return(NULL)}
     
-    if (class(train_data()[,c(input$yAttr)]) == "factor"){
+    if (class(test_data()[,c(input$yAttr)]) == "factor"){
       y = test_data()[,input$yAttr]
-      yhat = fit.rt()$validation
+      yhat = fit.rt()$validation1
     confusion_matrix = table(y,yhat)
     accuracy = (sum(diag(confusion_matrix))/sum(confusion_matrix))*100
     out = list(Confusion_matrix_of_Validation = confusion_matrix, Accuracy_of_Validation = accuracy)
     } else {
-    dft = data.frame(scale(data.frame(y = test_data()[,input$yAttr], yhat = fit.rt()$validation)))
+    dft = data.frame(scale(data.frame(y = test_data()[,input$yAttr], yhat = fit.rt()$validation1)))
     mse.y = mse(dft$y,dft$yhat)
     out = list(Mean_Square_Error_of_Standardized_Response_in_Test_Data = mse.y)
     } 
     out
        })
   
-  output$validation1 = renderPrint({
+  output$validation = renderPrint({
     if (is.null(input$file)) {return(NULL)}
     
     if (class(train_data()[,c(input$yAttr)]) == "factor"){
       y = train_data()[,input$yAttr]
-      yhat = fit.rt()$validation1
+      yhat = fit.rt()$validation
       confusion_matrix = table(y,yhat)
       accuracy = (sum(diag(confusion_matrix))/sum(confusion_matrix))*100
       out = list(Confusion_matrix_of_Validation = confusion_matrix, Accuracy_of_Validation = accuracy)
     } else {
-      dft = data.frame(scale(data.frame(y = train_data()[,input$yAttr], yhat = fit.rt()$validation1)))
+      dft = data.frame(scale(data.frame(y = train_data()[,input$yAttr], yhat = fit.rt()$validation)))
       mse.y = mse(dft$y,dft$yhat)
       out = list(Mean_Square_Error_of_Standardized_Response_in_Training_Data = mse.y)
     } 
     out
   })
   
-  output$validation2 = renderPrint({
-    if (is.null(input$file)) {return(NULL)}
-    
-    if (class(train_data()[,c(input$yAttr)]) == "factor"){
-      y = Dataset.Predict()[,c(input$yAttr)]
-      yhat = prediction()$Yhat
-      confusion_matrix = table(y,yhat)
-      accuracy = (sum(diag(confusion_matrix))/sum(confusion_matrix))*100
-      out = list(Confusion_matrix_of_Validation = confusion_matrix, Accuracy_of_Validation = accuracy)
-    } else {
-      dft = data.frame(scale(data.frame(y = Dataset.Predict()[,c(input$yAttr)], yhat = prediction()$Yhat)))
-      mse.y = mse(dft$y,dft$yhat)
-      out = list(Mean_Square_Error_of_Standardized_Response_in_Prediction_Data = mse.y)
-    } 
-    out
-  })
-  
+
   #------------------------------------------------#
   output$results = renderPrint({
     
